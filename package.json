@@ -1,0 +1,19 @@
+{
+  "name": "twapp",
+  "version": "0.0.1",
+  "description": "get data from twitch",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/g1nus/Twapp.git"
+  },
+  "author": "Giuliano Andronic",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/g1nus/Twapp/issues"
+  },
+  "homepage": "https://github.com/g1nus/Twapp#readme"
+}
