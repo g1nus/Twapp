@@ -4,22 +4,20 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
 
-const su = require('@utils/startup');
-const {passCheck} = require('@utils/keyCheck');
-const {streamerInfo} = require('@controllers/streamer');
+const security = require('@utils/security');
 const {monitor} = require('@controllers/monitor');
-const {search} = require('@controllers/search');
+const {search, streamerInfo} = require('@controllers/twapi');
 const {subList, delSubList} = require('@controllers/dev');
 
 const app = express();
 
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const router = express.Router();
 
 //first, of all I run the startup
-su.initialLogin().then(
+security.initialLogin().then(
 
   function (config) {
 
@@ -31,54 +29,63 @@ su.initialLogin().then(
     router.use((req, res, next) => {
       console.log(req.url);
 
-      if(passCheck(req, config.adapterSecret)){
+      if(security.passCheck(req, config.adapterSecret)){
         next();
       }else{
         res.json({error: `you're not authorized`});
       }
     });
 
+    //search for a streamer
     router.get('/search', async (req, res, next) => {
       try{
         let resp = await search(req.query.query);
-        res.json(resp.data)
+        res.json(resp.data);
+
       }catch (err){
         return next(err);
       }
     })
 
+    //get info about a streamer
     router.get('/streamer', async (req, res, next) => {
       try{
         let resp = await streamerInfo(req.query.id);
-        res.json(resp.data)
+        res.json(resp.data);
+
       }catch (err){
         return next(err);
       }
     })
 
+    //start monitor
     router.get('/monitor', async (req, res, next) => {
       try{
-        await monitor(req.query.id, req.query.start || true);
+        await monitor(req.query.id, req.query.start);
+        res.json({data: 'ok'});
 
-        res.json({data: "ok"});
       }catch (err){
         return next(err);
       }
     });
 
+    //get list of Twitch web-hooks
     router.get('/dev/subscriptions', async (req, res, next) => {
       try{
         let resp = await subList();
         res.json(resp.data);
+
       }catch (err){
         return next(err);
       }
     })
     
+    //delete (all) Twitch web-hooks
     router.delete('/dev/subscriptions', async (req, res, next) => {
       try{
         let resp = await delSubList(req.query.id);
         res.json(resp.data);
+
       }catch (err){
         return next(err);
       }

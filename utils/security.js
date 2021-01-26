@@ -1,11 +1,11 @@
 require('dotenv').config();
-const axios = require("axios");
+const axios = require('axios');
 
 var initialLogin = async function () {
   try{
     if(process.env.ACCESS_TOKEN){
 
-      console.log("ACCESS TOKEN is present");
+      console.log('ACCESS TOKEN is present');
 
       return {
         port: process.env.PORT,
@@ -14,12 +14,12 @@ var initialLogin = async function () {
         adapterSecret: process.env.ADAPTER_SECRET,
         authorization: {
           access_token: process.env.ACCESS_TOKEN,
-          token_type: "bearer"
+          token_type: 'bearer'
         }
       };
     }
 
-    console.log("NO ACCESS TOKEN, requiring new one");
+    console.log('NO ACCESS TOKEN, requiring new one');
 
     const resp = await axios.post(`https://id.twitch.tv/oauth2/token?client_id=${process.env.CLIENT_ID}&client_secret=${process.env.SECRET}&grant_type=client_credentials`);
 
@@ -39,9 +39,19 @@ var initialLogin = async function () {
       clientId: process.env.CLIENT_ID,
       secret: process.env.SECRET,
       adapterSecret: process.env.ADAPTER_SECRET,
-      authorization: "invalid_token"
+      authorization: 'invalid_token'
     };
   }
 }
 
+const passCheck = function (req, key) {
+  if(req.url === '/twebhook' /* better check for twitch auth later!*/ || req.query.key === key){
+    return true;
+  }else{
+    return false;
+  }
+}
+
+
 exports.initialLogin = initialLogin;
+exports.passCheck = passCheck;
