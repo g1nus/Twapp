@@ -1,10 +1,14 @@
+require('module-alias/register');
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
 
-const su = require('./utils/startup');
-const {passCheck} = require('./utils/keyCheck');
-const {search} = require('./modules/controllers/search');
+const su = require('@utils/startup');
+const {passCheck} = require('@utils/keyCheck');
+const {ipcMessage} = require('@utils/ipcClient');
+const {monitor} = require('@controllers/monitor');
+const {search} = require('@controllers/search');
 
 
 const app = express();
@@ -37,11 +41,23 @@ su.initialLogin().then(
     router.get('/search', async (req, res, next) => {
       try{
         let resp = await search(req.query.query);
+        ipcMessage('channel', 'search', {data: {query: req.query.query}});
+
         res.json(resp.data)
       }catch (err){
         return next(err);
       }
     })
+
+    router.get('/monitor', async (req, res, next) => {
+      try{
+        await monitor(req.query.id, req.query.toggle);
+
+        res.json({data: "ok"});
+      }catch (err){
+        return next(err);
+      }
+    });
     
     app.use('/', router)
 
