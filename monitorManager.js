@@ -20,61 +20,57 @@ let config = {
 axios.defaults.headers.common['client-id'] = config.clientId;
 axios.defaults.headers.common['Authorization'] = 'Bearer ' + config.authorization.access_token;
 
-async function monitor(){
+async function startMonitor(id){
   try{
-    console.log("ONLINE STREAMER");
+    let streamerInfo = {};
+
+    console.log("Getting STREAMER");
     //get broadcaster name, language
-    let resp1 = await axios.get("https://api.twitch.tv/helix/channels?broadcaster_id=536083731");
-    console.log(resp1.data);
+    const [resp1, resp2, resp3] = await axios.all([
+      axios.get(`https://api.twitch.tv/helix/channels?broadcaster_id=${id}`),
+      axios.get(`https://api.twitch.tv/helix/users?id=${id}`),
+      axios.get(`https://api.twitch.tv/helix/users/follows?to_id=${id}`)
+    ])
 
-    //get broadcaster description, image, total view count
-    let resp2 = await axios.get("https://api.twitch.tv/helix/users?id=536083731");
-    console.log(resp2.data);
+    streamerInfo.name = resp1.data.data[0].broadcaster_name;
+    streamerInfo.language = resp1.data.data[0].broadcaster_language;
+    streamerInfo.description = resp2.data.data[0].description;
+    streamerInfo.proPic = resp2.data.data[0].profile_image_url;
+    streamerInfo.views = resp2.data.data[0].view_count;
+    streamerInfo.followers = resp3.data.total;
+
+    console.log(`INFO\n`, streamerInfo);
     
-    //get total number of followers
-    let resp3 = await axios.get("https://api.twitch.tv/helix/users/follows?to_id=536083731");
-    console.log(resp3.data);
-
+    /*
     //if stream is active, get broadcaster stream: id, game, title, viewer count
     let resp4 = await axios.get("https://api.twitch.tv/helix/streams?user_id=536083731");
     console.log(resp4.data);
+    */
 
-    console.log("OFFLINE STREAMER");
-
-    resp1 = await axios.get("https://api.twitch.tv/helix/channels?broadcaster_id=159498717");
-    console.log(resp1.data);
-
-    resp2 = await axios.get("https://api.twitch.tv/helix/users?id=159498717");
-    console.log(resp2.data);
-
-    resp3 = await axios.get("https://api.twitch.tv/helix/users/follows?to_id=159498717");
-    console.log(resp3.data);
-
-    resp4 = await axios.get("https://api.twitch.tv/helix/streams?user_id=159498717");
-    console.log(resp4.data);
-    
-    resp4 = await axios.get("https://api.twitch.tv/helix/streams?user_id=453951609");
-    console.log(resp4.data);
 
   }catch(err){
     console.error(err);
   }
-
   
 }
 
 ipc.serve(
   function(){
+    /*
     ipc.server.on(
       'search',
       function(query){
         console.log("got a search", query);
       }
     );
+    */
     ipc.server.on(
       'monitor',
-      function(id){
+      function(id, flag){
         console.log("got a monitor request", id);
+        if(flag){
+          startMonitor(id);
+        }
       }
     );
   }

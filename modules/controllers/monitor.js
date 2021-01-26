@@ -1,6 +1,6 @@
 const {ipcMessage} = require('@utils/ipcClient');
 
-var monitor = async function (id, toggle) {
+var monitor = async function (id, start) {
 
   if(!id){
     let err = new Error(`the id is not defined`);
@@ -8,7 +8,9 @@ var monitor = async function (id, toggle) {
     throw err; 
   }
 
-  ipcMessage('channel', 'monitor', id);
+  if(start){
+    ipcMessage('channel', 'monitor', id);
+  }
 
 }
 
