@@ -9,7 +9,7 @@ const {passCheck} = require('@utils/keyCheck');
 const {streamerInfo} = require('@controllers/streamer');
 const {monitor} = require('@controllers/monitor');
 const {search} = require('@controllers/search');
-
+const {subList, delSubList} = require('@controllers/dev');
 
 const app = express();
 
@@ -65,12 +65,29 @@ su.initialLogin().then(
         return next(err);
       }
     });
+
+    router.get('/dev/subscriptions', async (req, res, next) => {
+      try{
+        let resp = await subList();
+        res.json(resp.data);
+      }catch (err){
+        return next(err);
+      }
+    })
     
+    router.delete('/dev/subscriptions', async (req, res, next) => {
+      try{
+        let resp = await delSubList(req.query.id);
+        res.json(resp.data);
+      }catch (err){
+        return next(err);
+      }
+    })
+
     app.use('/', router)
 
     //last middleware for sending error
     app.use((err, req, res, next) => {
-      console.log("[errrorrr]", err);
       //console.error('[Error]', err);
       res.status(err.name).json({text: err.message});
     });
