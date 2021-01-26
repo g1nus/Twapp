@@ -6,7 +6,7 @@ const axios = require('axios');
 
 const su = require('@utils/startup');
 const {passCheck} = require('@utils/keyCheck');
-const {ipcMessage} = require('@utils/ipcClient');
+const {streamerInfo} = require('@controllers/streamer');
 const {monitor} = require('@controllers/monitor');
 const {search} = require('@controllers/search');
 
@@ -41,8 +41,15 @@ su.initialLogin().then(
     router.get('/search', async (req, res, next) => {
       try{
         let resp = await search(req.query.query);
-        ipcMessage('channel', 'search', {data: {query: req.query.query}});
+        res.json(resp.data)
+      }catch (err){
+        return next(err);
+      }
+    })
 
+    router.get('/streamer', async (req, res, next) => {
+      try{
+        let resp = await streamerInfo(req.query.id);
         res.json(resp.data)
       }catch (err){
         return next(err);
@@ -51,7 +58,7 @@ su.initialLogin().then(
 
     router.get('/monitor', async (req, res, next) => {
       try{
-        await monitor(req.query.id, req.query.toggle);
+        await monitor(req.query.id, req.query.start || true);
 
         res.json({data: "ok"});
       }catch (err){
@@ -63,6 +70,7 @@ su.initialLogin().then(
 
     //last middleware for sending error
     app.use((err, req, res, next) => {
+      console.log("[errrorrr]", err);
       //console.error('[Error]', err);
       res.status(err.name).json({text: err.message});
     });
