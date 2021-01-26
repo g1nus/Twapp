@@ -11,6 +11,7 @@ var search = async function (keyword) {
   try{
     return await axios.get(`https://api.twitch.tv/helix/search/channels?query=${keyword}`);
   }catch (err){
+    err.name = 400;
     throw err;
   }
 }
