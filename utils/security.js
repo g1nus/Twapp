@@ -12,6 +12,8 @@ var initialLogin = async function () {
         clientId: process.env.CLIENT_ID,
         secret: process.env.SECRET,
         adapterSecret: process.env.ADAPTER_SECRET,
+        webhookSecret: process.env.WEBHOOK_SECRET,
+        webhookCallback: process.env.WEBHOOK_CALLBACK,
         authorization: {
           access_token: process.env.ACCESS_TOKEN,
           token_type: 'bearer'
@@ -28,6 +30,8 @@ var initialLogin = async function () {
       clientId: process.env.CLIENT_ID,
       secret: process.env.SECRET,
       adapterSecret: process.env.ADAPTER_SECRET,
+      webhookSecret: process.env.WEBHOOK_SECRET,
+      webhookCallback: process.env.WEBHOOK_CALLBACK,
       authorization: resp.data
     };
 
@@ -39,13 +43,15 @@ var initialLogin = async function () {
       clientId: process.env.CLIENT_ID,
       secret: process.env.SECRET,
       adapterSecret: process.env.ADAPTER_SECRET,
+      webhookSecret: process.env.WEBHOOK_SECRET,
+      webhookCallback: process.env.WEBHOOK_CALLBACK,
       authorization: 'invalid_token'
     };
   }
 }
 
 const passCheck = function (req, key) {
-  if(req.url === '/twebhook' /* better check for twitch auth later!*/ || req.query.key === key){
+  if(req.query.key === key){
     return true;
   }else{
     return false;

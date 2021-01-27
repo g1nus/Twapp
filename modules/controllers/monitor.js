@@ -1,6 +1,6 @@
-const {ipcMessage} = require('@utils/ipcClient');
+const axios = require('axios');
 
-var monitor = async function (id, start = true) {
+const startMonitor = async function (id, callback, secret) {
 
   if(!id){
     let err = new Error(`the id is not defined`);
@@ -8,10 +8,24 @@ var monitor = async function (id, start = true) {
     throw err; 
   }
 
-  if(start){
-    ipcMessage('channel', 'monitor', id);
+  try{
+    return await axios.post(`https://api.twitch.tv/helix/eventsub/subscriptions`,
+      {
+        'type': 'channel.follow',
+        'version': '1',
+        'condition': {
+            'broadcaster_user_id': id
+        },
+        'transport': {
+            'method': 'webhook',
+            'callback': callback,
+            'secret': secret
+        }
+    });
+  }catch (err){
+    err.name = 400;
+    throw err;
   }
-
 }
 
-exports.monitor = monitor;
+exports.startMonitor = startMonitor;

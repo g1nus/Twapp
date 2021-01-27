@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const axios = require('axios');
 
 const security = require('@utils/security');
-const {monitor} = require('@controllers/monitor');
+const {startMonitor} = require('@controllers/monitor');
 const {search, streamerInfo} = require('@controllers/twapi');
 const {subList, delSubList} = require('@controllers/dev');
 
@@ -61,10 +61,11 @@ security.initialLogin().then(
     //start monitor
     router.get('/monitor', async (req, res, next) => {
       try{
-        await monitor(req.query.id, req.query.start);
-        res.json({data: 'ok'});
+        let resp = await startMonitor(req.query.id, config.webhookCallback, config.webhookSecret);
+        res.json(resp.data);
 
       }catch (err){
+        err.name = 400;
         return next(err);
       }
     });
@@ -96,7 +97,11 @@ security.initialLogin().then(
     //last middleware for sending error
     app.use((err, req, res, next) => {
       //console.error('[Error]', err);
-      res.status(err.name).json({text: err.message});
+      if(err.response?.data?.message){
+        res.status(err.name).json({error: err.response.data.message});
+      }else{
+        res.status(err.name).json({error: err.message});
+      }
     });
 
     app.listen(config.port, () => {
