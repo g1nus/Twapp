@@ -29,10 +29,21 @@ security.initialLogin().then(
     router.use((req, res, next) => {
       console.log(req.url);
 
-      if(security.passCheck(req, config.adapterSecret)){
-        next();
-      }else{
-        res.json({error: `you're not authorized`});
+      res.header("Access-Control-Allow-Origin", req.headers.origin);
+      //enable the cookie sending
+      res.header('Access-Control-Allow-Credentials', 'true');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, DELETE, PUT');
+      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Accept, Cache-Control, Content-Type, Authorization');
+
+      if (req.method === "OPTIONS") {
+          res.sendStatus(200);
+      }
+      else {
+        if(security.passCheck(req, config.adapterSecret)){
+          next();
+        }else{
+          res.status(403).json({error: `you're not authorized`});
+        }
       }
     });
 
