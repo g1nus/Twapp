@@ -1,10 +1,5 @@
 const axios = require('axios');
 
-function Emote(url, code) {
-  this[code] = url;
-}
-
-
 const parseEmotes = async function (streamerId, words) {
   console.log(`[EM] streamer ID: ${streamerId} \n[EM]words are: ${words} | ${words.length}`);
   console.log(`[EM] fetching cached emotes`);
@@ -27,26 +22,26 @@ const parseEmotes = async function (streamerId, words) {
 
     console.log(`[EM] fetched the emotes`, respBttv);
     if(respBttv.data){
-      const foundBttv = respBttv.data.sharedEmotes.filter((emote) => words.includes(emote.code)).map((emote) => new Emote(`https://cdn.betterttv.net/emote/${emote.id}/3x`, emote.code));
+      var foundBttv = respBttv.data.sharedEmotes.filter((emote) => words.includes(emote.code)).map((emote) => [emote.code, `https://cdn.betterttv.net/emote/${emote.id}/3x`]);
       parsedEmotes.push(...foundBttv);
-      const foundBttv2 = respBttv.data.channelEmotes.filter((emote) => words.includes(emote.code)).map((emote) => new Emote(`https://cdn.betterttv.net/emote/${emote.id}/3x`, emote.code));
+      var foundBttv2 = respBttv.data.channelEmotes.filter((emote) => words.includes(emote.code)).map((emote) => [emote.code, `https://cdn.betterttv.net/emote/${emote.id}/3x`]);
       parsedEmotes.push(...foundBttv2);
     }
     if(respFfz.data){
-      const foundFfz = respFfz.data.filter((emote) => words.includes(emote.code)).map((emote) => new Emote(emote.images['4x'], emote.code));
+      var foundFfz = respFfz.data.filter((emote) => words.includes(emote.code)).map((emote) => [emote.code, emote.images['4x']]);
       parsedEmotes.push(...foundFfz);
     }
     if(respTem.data){
-      const foundTem = respTem.data.emotes.filter((emote) => words.includes(emote.code)).map((emote) => new Emote(`http://static-cdn.jtvnw.net/emoticons/v1/${emote.id}/3.0`, emote.code));
+      var foundTem = respTem.data.emotes.filter((emote) => words.includes(emote.code)).map((emote) => [emote.code, `http://static-cdn.jtvnw.net/emoticons/v1/${emote.id}/3.0`]);
       parsedEmotes.push(...foundTem);
     }
     if(respDefault.data){
-      const foundDefault = respDefault.data.emotes.filter((emote) => words.includes(emote.code)).map((emote) => new Emote(`http://static-cdn.jtvnw.net/emoticons/v1/${emote.id}/3.0`, emote.code));
+      var foundDefault = respDefault.data.emotes.filter((emote) => words.includes(emote.code)).map((emote) => [emote.code, `http://static-cdn.jtvnw.net/emoticons/v1/${emote.id}/3.0`]);
       parsedEmotes.push(...foundDefault);
     }
 
-    console.log({data: {parsedEmotes}});
-    return {data: {parsedEmotes}};
+    console.log({data: Object.fromEntries(parsedEmotes)});
+    return {data: Object.fromEntries(parsedEmotes)};
 
   }catch (err){
     console.log(err);
