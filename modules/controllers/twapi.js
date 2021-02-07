@@ -51,7 +51,27 @@ const search = async function (keyword) {
   }
 
   try{
-    return await axios.get(`https://api.twitch.tv/helix/search/channels?query=${keyword}`);
+    let resp = await axios.get(`https://api.twitch.tv/helix/search/channels?query=${keyword}`);
+
+    //for each streamer I get additional data: (description and followers)
+    resp.data.data = await Promise.all(resp.data.data.map(async (streamer) =>{
+      try{
+        const [resp2, resp3] = await axios.all([
+          axios.get(`https://api.twitch.tv/helix/users?id=${streamer.id}`),
+          axios.get(`https://api.twitch.tv/helix/users/follows?to_id=${streamer.id}`)
+        ]);
+        streamer.description = resp2.data.data[0].description;
+        streamer.followers = resp3.data.total;
+      }catch (err){
+        console.log(err);
+      }
+      return streamer;
+    }))
+
+    //I sort the streamers by number of followers
+    resp.data.data.sort((s1, s2) => s2.followers - s1.followers);
+    return resp;
+    
   }catch (err){
     err.name = 400;
     throw err;
