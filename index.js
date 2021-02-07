@@ -8,6 +8,8 @@ const security = require('@utils/security');
 const {startMonitor} = require('@controllers/monitor');
 const {search, streamerInfo} = require('@controllers/twapi');
 const {subList, delSubList} = require('@controllers/dev');
+const {parseEmotes} = require('@controllers/twemotes');
+const streamerDbController = require('@controllers/streamer');
 
 const app = express();
 
@@ -69,6 +71,31 @@ security.initialLogin().then(
       }
     })
 
+    router.get('/info/streamer', async (req, res, next) => {
+      try{
+        let resp = await streamerDbController.getStreamer(req.query.id);
+        let streams = await streamerDbController.getStreamsOfStreamer(req.query.id);
+        resp.data.streams = streams.data;
+        res.json(resp.data);
+
+      }catch (err){
+        return next(err);
+      }
+    })
+
+    router.get('/stats/stream', async (req, res, next) => {
+      try{
+        let stream = await streamerDbController.getStream(req.query.id);
+        if(stream?.data?.streamId){
+          stream.data.events = await streamerDbController.getEventsOfStream(stream.data.streamId);
+        }
+        res.json(stream.data);
+
+      }catch (err){
+        return next(err);
+      }
+    })
+
     //start monitor
     router.get('/monitor', async (req, res, next) => {
       try{
@@ -88,6 +115,7 @@ security.initialLogin().then(
         res.json(resp.data);
 
       }catch (err){
+        err.name = 400;
         return next(err);
       }
     })
@@ -99,6 +127,19 @@ security.initialLogin().then(
         res.json(resp.data);
 
       }catch (err){
+        err.name = 400;
+        return next(err);
+      }
+    })
+
+    router.get('/emotes', async (req, res, next) => {
+      try{
+        console.log(req.query);
+        let resp = await parseEmotes(req.query.id, req.query.emotes.split(','));
+        res.json(resp.data);
+
+      }catch (err){
+        err.name = 400;
         return next(err);
       }
     })
