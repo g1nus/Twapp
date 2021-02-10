@@ -54,7 +54,7 @@ security.initialLogin().then(
     router.get('/search', async (req, res, next) => {
       try{
         let resp = await search(req.query.query);
-        res.json(resp.data);
+        res.json(resp);
 
       }catch (err){
         return next(err);

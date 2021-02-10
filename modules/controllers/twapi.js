@@ -60,8 +60,37 @@ const search = async function (keyword) {
           axios.get(`https://api.twitch.tv/helix/users?id=${streamer.id}`),
           axios.get(`https://api.twitch.tv/helix/users/follows?to_id=${streamer.id}`)
         ]);
+
+        //fields fix cleanup
+        streamer.streamerId = streamer.id;
+        streamer.loginName = streamer.broadcaster_login;
+        streamer.displayName = streamer.display_name;
+        streamer.profilePicture = streamer.thumbnail_url;
         streamer.description = resp2.data.data[0].description;
         streamer.followers = resp3.data.total;
+        streamer.broadcasterLanguage = streamer.broadcaster_language;
+
+        streamer.isLive = streamer.is_live;
+        if(streamer.is_live){
+          streamer.stream = {
+            gameId: streamer.game_id,
+            title: streamer.title,
+            startedAt: streamer.started_at
+          }
+        }
+
+        //delete old default fields
+        streamer.broadcaster_language = undefined;
+        streamer.id = undefined;
+        streamer.broadcaster_login = undefined;
+        streamer.display_name = undefined;
+        streamer.thumbnail_url = undefined;
+        streamer.is_live = undefined;
+        streamer.game_id = undefined;
+        streamer.title = undefined;
+        streamer.started_at = undefined;
+        streamer.tag_ids = undefined;
+
       }catch (err){
         console.log(err);
       }
@@ -70,7 +99,7 @@ const search = async function (keyword) {
 
     //I sort the streamers by number of followers
     resp.data.data.sort((s1, s2) => s2.followers - s1.followers);
-    return resp;
+    return {results: resp.data.data};
     
   }catch (err){
     err.name = 400;
