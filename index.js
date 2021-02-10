@@ -6,7 +6,7 @@ const axios = require('axios');
 
 const security = require('@utils/security');
 const {startMonitor} = require('@controllers/monitor');
-const {search, streamerInfo} = require('@controllers/twapi');
+const {search} = require('@controllers/twapi');
 const {subList, delSubList} = require('@controllers/dev');
 const {parseEmotes} = require('@controllers/twemotes');
 const streamerDbController = require('@controllers/streamer');
@@ -61,36 +61,59 @@ security.initialLogin().then(
       }
     })
 
-    //get info about a streamer
-    router.get('/streamer', async (req, res, next) => {
+    //get list of monitored streamers or search one
+    router.get('/streamers', async (req, res, next) => {
       try{
-        let resp = await streamerInfo(req.query.id);
-        res.json(resp.data);
+        let resp = await streamerDbController.getMonitoredStreamers(req.query.query);
+        res.json(resp);
 
       }catch (err){
         return next(err);
       }
     })
 
-    router.get('/info/streamer', async (req, res, next) => {
+    //get list details of a particular streamer
+    router.get('/streamers/:id', async (req, res, next) => {
       try{
-        let resp = await streamerDbController.getStreamer(req.query.id);
-        let streams = await streamerDbController.getStreamsOfStreamer(req.query.id);
-        resp.data.streams = streams.data;
-        res.json(resp.data);
+        let resp = await streamerDbController.getStreamer(req.params.id);
+
+        res.json(resp);
 
       }catch (err){
         return next(err);
       }
     })
 
-    router.get('/stats/stream', async (req, res, next) => {
+    //get list of streams of a monitored streamer
+    router.get('/streamers/:id/streams', async (req, res, next) => {
       try{
-        let stream = await streamerDbController.getStream(req.query.id);
-        if(stream?.data?.streamId){
-          stream.data.events = await streamerDbController.getEventsOfStream(stream.data.streamId);
-        }
-        res.json(stream.data);
+        let resp = await streamerDbController.getStreamsOfStreamer(req.params.id);
+
+        res.json(resp);
+
+      }catch (err){
+        return next(err);
+      }
+    })
+
+    //get list of streams of a monitored streamer
+    router.get('/streamers/:streamer_id/streams/:stream_id', async (req, res, next) => {
+      try{
+        let resp = await streamerDbController.getStreamOfStreamerById(req.params.streamer_id, req.params.stream_id);
+
+        res.json(resp);
+
+      }catch (err){
+        return next(err);
+      }
+    })
+
+    //get events of a stream
+    router.get('/streamers/:streamer_id/streams/:stream_id/events', async (req, res, next) => {
+      try{
+        let resp = await streamerDbController.getEventsOfStream(req.params.streamer_id, req.params.stream_id);
+
+        res.json(resp);
 
       }catch (err){
         return next(err);
@@ -98,9 +121,9 @@ security.initialLogin().then(
     })
 
     //start monitor
-    router.get('/monitor', async (req, res, next) => {
+    router.post('/streamers', async (req, res, next) => {
       try{
-        let resp = await startMonitor(req.query.id, config.webhookCallback, config.webhookSecret);
+        let resp = await startMonitor(req.body.streamerId, config.webhookCallback, config.webhookSecret);
         res.json(resp.data);
 
       }catch (err){

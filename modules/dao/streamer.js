@@ -42,7 +42,16 @@ const resetData = function () {
 
 const getStreamerById = function(streamerId) {
   return new Promise(async function (resolve, reject) {
-    Streamer.findOne({streamerId: streamerId}).lean().then(function (streamer) {
+    Streamer.findOne({streamerId: streamerId}).select([
+      '-_id',
+      'streamerId',
+      'displayName',  //displayName e loginName
+      'loginName',  //displayName e loginName
+      'profilePicture', //profilePicture
+      'description',
+      'followers',
+      'broadcasterLanguage' //broadcasterLanguage
+    ]).lean().then(function (streamer) {
       console.log(`[DB] found streamer ${streamerId}`);
       resolve(streamer);
     }).catch(function (err) {
@@ -58,10 +67,10 @@ const getStreamsByStreamerId = function(streamerId) {
     Stream.find({streamerId: streamerId}).select([
       '-_id',
       'streamId',
-      'streamerId',
       'title',
-      'startedAt',
-      'createdAt'
+      'gameName',
+      'gameId',
+      'startedAt'
     ]).lean().then(function (streams) {
       console.log(`[DB] found streams of streamer ${streamerId}`);
       resolve(streams);
@@ -83,7 +92,6 @@ const getEventsByStreamId = function (streamId) {
       'subscriptions.user',
       'subscriptions.months',
       'subscriptions.msg',
-      'subscriptions.subPlanName',
       'subscriptions.createdAt',
       'raids.user',
       'raids.createdAt'
@@ -102,13 +110,14 @@ const getStreamById = function(streamId) {
     Stream.findOne({streamId: streamId}).select([
       '-_id',
       'streamId',
-      'streamerId',
       'title',
       'startedAt',
-      'createdAt',
+      'gameName',
+      'gameId',
+      'tunits.title',
       'tunits.followers',
       'tunits.viewers',
-      'tunits.title',
+      'tunits.gameId',
       'tunits.createdAt'
     ]).lean().then(function (stream) {
       resolve(stream);
@@ -119,10 +128,76 @@ const getStreamById = function(streamId) {
   });
 };
 
+const getStreamByIdAndStreamerId = function(streamId, streamerId) {
+  return new Promise(async function (resolve, reject) {
+    console.log(`[DB] serching for stream ${streamId} / ${streamerId}`);
+    Stream.findOne({streamId: streamId, streamerId: streamerId}).select([
+      '-_id',
+      'streamId',
+      'title',
+      'startedAt',
+      'gameName',
+      'gameId',
+      'tunits.title',
+      'tunits.followers',
+      'tunits.viewers',
+      'tunits.gameId',
+      'tunits.gameName',
+      'tunits.createdAt'
+    ]).lean().then(function (stream) {
+      resolve(stream);
+    }).catch(function (err) {
+      console.log(err);
+      reject();
+    });
+  });
+};
+
+const getAllStreamers = function() {
+  return new Promise(async function (resolve, reject){
+    Streamer.find({}).select([
+      '-_id',
+      'streamerId',
+      'displayName',  //displayName e loginName
+      'loginName',  //displayName e loginName
+      'profilePicture', //profilePicture
+      'description',
+      'followers',
+      'broadcasterLanguage' //broadcasterLanguage
+    ]).lean().then(function (streamers) {
+      resolve(streamers);
+    }).catch(function (err) {
+      console.log(err);
+      reject();
+    });
+  });
+}
+
+const findStreamer = function(keyword) {
+  return new Promise(async function (resolve, reject){
+    Streamer.find({$or: [{displayName: keyword}, {loginName: keyword}]}).select([
+      '-_id',
+      'streamerId',
+      'displayName',  //displayName e loginName
+      'loginName',  //displayName e loginName
+      'profilePicture', //profilePicture
+      'description',
+      'followers',
+      'broadcasterLanguage' //broadcasterLanguage
+    ]).lean().then(function (streamers) {
+      resolve(streamers);
+    }).catch(function (err) {
+      console.log(err);
+      reject();
+    });
+  });
+}
+
 module.exports = {
-  connect, disconnect, resetData, 
+  connect, disconnect, resetData,
+  getAllStreamers, findStreamer,
   getStreamerById,
-  getStreamById,
+  getStreamById, getStreamByIdAndStreamerId,
   getStreamsByStreamerId,
   getEventsByStreamId
 };
