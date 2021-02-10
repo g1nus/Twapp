@@ -28,7 +28,7 @@ const parseEmotes = async function (streamerId, words) {
       parsedEmotes.push(...foundBttv2);
     }
     if(respFfz.data){
-      var foundFfz = respFfz.data.filter((emote) => words.includes(emote.code)).map((emote) => [emote.code, emote.images['4x']]);
+      var foundFfz = respFfz.data.filter((emote) => words.includes(emote.code)).map((emote) => [emote.code, emote.images['4x'] || emote.images['2x']]);
       parsedEmotes.push(...foundFfz);
     }
     if(respTem.data){
