@@ -14,6 +14,14 @@ const getStreamer = function(id){
         resolve({message: 'cannot find streamer'});
       }else{
         let streams = await dao.getStreamsByStreamerId(id);
+        
+        streams = await Promise.all(streams.map(async (stream) => {
+          let streamDetails = await dao.getStreamById(stream.streamId);
+          return {...stream, tunits: undefined, good: (streamDetails.tunits && streamDetails.tunits.length >= 3)}
+        }))
+
+        streams = streams.filter((stream) => stream.good);
+
         resolve({...streamer,streams: streams.map((stream) => {stream.thumbnail = `https://alpha.mangolytica.tk/static/${stream.streamId}.jpg`;return stream;})});
       }
     }).catch(function (err) {
