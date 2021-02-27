@@ -23,6 +23,8 @@ And then you must set up the ENV variables (you can take a look at an example [h
 A running MongoDB instance is also necessary in order to retrieve the data of the monitored streamers, which are being saved inside the database by the Twonitor app. It is necessary for the Twonitor app to have its own *WEBHOOK_SECRET* (this is available from your Twitch Dev [console](https://dev.twitch.tv/console)) and to listen for notifications at the *WEBHOOK_CALLBACK* URL.\
 In fact, Twapp will ask Twitch to send the notifications at the *WEBHOOK_CALLBACK* URL.
 
+Finally, you can run the app by running: ```npm start```
+
 ## API Documentation
 
 You can find the full API documentation [here](https://alphamangolytica.docs.apiary.io).
